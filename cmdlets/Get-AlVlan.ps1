@@ -81,9 +81,8 @@ function Get-AlVlan {
 				$EvalParams.Regex          = [regex] "^vlan\ $Vlan`\ members\ (?<portstring>(port|linkagg)\ .+?)\ (?<tag>.+)"
 				$Eval                      = HelperEvalRegex @EvalParams
 				if ($Eval) {
-					$NewObject.Destination  = $Eval.Groups['network'].Value
-					$NewObject.Destination += '/'
-					$NewObject.Destination += (ConvertTo-MaskLength $Eval.Groups['mask'].Value)
+                    $Tag = $Eval.Groups['tag'].Value
+                    $NewObject."$Tag`Members" = Resolve-AlPortString $Eval.Groups['portstring'].Value
 				}
                 
 				

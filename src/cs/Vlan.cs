@@ -10,10 +10,10 @@ using System.Web;
 namespace AlcatelParser {
 	
     public class Vlan {
-		public string Id;
+		public int Id;
 		public string Name;
 		public string State;
-        public string UntaggedMembers;
-        public string TaggedMembers;
+        public List<string> UntaggedMembers;
+        public List<string> TaggedMembers;
     }
 }

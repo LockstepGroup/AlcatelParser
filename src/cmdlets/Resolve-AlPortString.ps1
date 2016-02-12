@@ -13,7 +13,7 @@ function Resolve-AlPortString {
 	
     $ReturnObject = @()
     
-    $PortStringRx = [regex] "((?<type>port|linkagg)\ )((?<module>(\d+\/)+)(?<start>\d+)(-(?<stop>\d+))?|\d+)"
+    $PortStringRx = [regex] "((?<type>port|linkagg)\ )((?<module>(\d+\/)+)(?<start>\d+)(-(?<stop>\d+))?|(?<start>\d+)(-(?<stop>\d+)))"
     
     $Match        = $PortStringRx.Match($PortString)
     
@@ -25,7 +25,7 @@ function Resolve-AlPortString {
         
         switch ($Type) {
             'linkagg' {
-                $Module = "0"
+                $Module = "0/"
             }
             'port' { 
             }

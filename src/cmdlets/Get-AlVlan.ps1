@@ -61,16 +61,21 @@ function Get-AlVlan {
 			
 			
 			# New Object
-			$EvalParams.Regex          = [regex] '^vlan\ (?<id>\d+)\ admin-state\ (?<state>\w+)'
+			$EvalParams.Regex          = [regex] '^vlan\ (?<start>\d+)(-(?<stop>\d+))?\ admin-state\ (?<state>\w+)'
 			$Eval                      = HelperEvalRegex @EvalParams
 			if ($Eval) {
-				$NewObject        = New-Object AlcatelParser.Vlan
-				$NewObject.Id     = $Eval.Groups['id'].Value
-                $NewObject.State  = $Eval.Groups['state'].Value
-				$ReturnObject    += $NewObject
-				Write-Verbose "object created: $($NewObject.Id)"
+                $Start = $Eval.Groups['start'].Value
+                $Stop  = $Eval.Groups['stop'].Value
                 
-                $Vlan = $Eval.Groups['id'].Value
+                if (!($Stop)) { $Stop = $Start }
+                
+                for ($i = [int]$Start; $i -le [int]$Stop; $i++) {
+                    $NewObject        = New-Object AlcatelParser.Vlan
+                    $NewObject.Id     = $i
+                    $NewObject.State  = $Eval.Groups['state'].Value
+                    $ReturnObject    += $NewObject
+                    Write-Verbose "object created: $($NewObject.Id)"
+                }
 			}
 			if ($NewObject) {
 				
@@ -78,11 +83,21 @@ function Get-AlVlan {
 				# Special Properties
 				
 				# Member Ports
-				$EvalParams.Regex          = [regex] "^vlan\ $Vlan`\ members\ (?<portstring>(port|linkagg)\ .+?)\ (?<tag>.+)"
+				$EvalParams.Regex          = [regex] "^vlan\ (?<vlan>\d+)\ members\ (?<portstring>(port|linkagg)\ .+?)\ (?<tag>.+)"
 				$Eval                      = HelperEvalRegex @EvalParams
 				if ($Eval) {
-                    $Tag = $Eval.Groups['tag'].Value
-                    $NewObject."$Tag`Members" = Resolve-AlPortString $Eval.Groups['portstring'].Value
+                    $Lookup                = $ReturnObject | ? { $_.id -eq [int]($Eval.Groups['vlan'].Value) }
+                    $Tag                   = $Eval.Groups['tag'].Value
+                    $Lookup."$Tag`Members" = Resolve-AlPortString $Eval.Groups['portstring'].Value
+				}
+                
+                # Names
+				$EvalParams.Regex          = [regex] "^vlan\ (?<vlan>\d+)\ name\ `"(?<name>.+?)`""
+				$Eval                      = HelperEvalRegex @EvalParams
+				if ($Eval) {
+                    $Lookup      = $ReturnObject | ? { $_.id -eq [int]($Eval.Groups['vlan'].Value) }
+                    $Tag         = $Eval.Groups['tag'].Value
+                    $Lookup.Name = $Eval.Groups['name'].Value
 				}
                 
 				
@@ -93,11 +108,6 @@ function Get-AlVlan {
 				$EvalParams.VariableToUpdate = ([REF]$NewObject)
 				$EvalParams.ReturnGroupNum   = 1
 				$EvalParams.LoopName         = 'fileloop'
-					
-				# Name
-				$EvalParams.Regex          = [regex] "^vlan\ $Vlan`\ name\ `"(.+?)`""
-				$EvalParams.ObjectProperty = "Name"
-				$Eval                      = HelperEvalRegex @EvalParams
 			}
 		} else {
 			continue

@@ -7,7 +7,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Xml;
 using System.Web;
 
-namespace AclatelParser {
+namespace AlcatelParser {
 	
     public class Vlan {
 		public string Id;

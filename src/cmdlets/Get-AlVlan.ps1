@@ -112,6 +112,10 @@ function Get-AlVlan {
 		} else {
 			continue
 		}
-	}	
+	}
+    
+    HelperCheckForObject AlcatelSwitch "AlcatelParser.Switch"
+    $Global:AlcatelSwitch.Vlans = $ReturnObject
+    
 	return $ReturnObject
 }

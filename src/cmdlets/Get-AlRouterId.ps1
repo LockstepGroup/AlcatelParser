@@ -1,4 +1,4 @@
-function Get-AlInterface {
+function Get-AlRouterId {
     [CmdletBinding()]
 	<#
         .SYNOPSIS
@@ -10,7 +10,7 @@ function Get-AlInterface {
 		[array]$Configuration
 	)
 	
-	$VerbosePrefix = "Get-AlInterface: "
+	$VerbosePrefix = "Get-AlRouterId: "
     $IpRx = [regex] "(\d+\.){3}\d+"
 	
 	$TotalLines = $Configuration.Count
@@ -36,7 +36,7 @@ function Get-AlInterface {
 		###########################################################################################
 		# Section Start
 		
-		$Regex = [regex] "^!\ IP:"
+		$Regex = [regex] "^!\ Chassis:"
 		$Match = HelperEvalRegex $Regex $line
 		if ($Match) {
 			$Section = $true
@@ -62,17 +62,10 @@ function Get-AlInterface {
 			
 			
 			# New Object
-			$EvalParams.Regex          = [regex] "^ip\ interface\ `"(?<name>.+?)`"\ address\ (?<ip>$IpRx)\ mask\ (?<mask>$IpRx)\ vlan\ (?<vlan>\d+)\ ifindex\ (?<ifindex>\d+)"
-            #ip interface "OSPF_243" address 10.243.1.254 mask 255.255.0.0 vlan 243 ifindex 1
+			$EvalParams.Regex          = [regex] "^ip\ router\ router-id\ (?<id>$IpRx)"
 			$Eval                      = HelperEvalRegex @EvalParams
 			if ($Eval) {
-                $NewObject            = New-Object AlcatelParser.Interface
-                $NewObject.Name       = $Eval.Groups['name'].Value
-                $NewObject.IpAddress  = $Eval.Groups['ip'].Value
-                $NewObject.IpAddress += "/" + (ConvertTo-MaskLength $Eval.Groups['mask'].Value)
-                $NewObject.Vlan       = $Eval.Groups['vlan'].Value
-                $NewObject.ifIndex    = $Eval.Groups['ifindex'].Value
-                $ReturnObject        += $NewObject
+                $ReturnObject = $Eval.Groups['id'].Value
 			}
 		} else {
 			continue
@@ -80,7 +73,7 @@ function Get-AlInterface {
 	}
     
     HelperCheckForObject AlcatelSwitch "AlcatelParser.Switch"
-    $Global:AlcatelSwitch.Interfaces = $ReturnObject
-    
+    $Global:AlcatelSwitch.RouterId = $ReturnObject
+
 	return $ReturnObject
 }

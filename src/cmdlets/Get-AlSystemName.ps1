@@ -70,6 +70,10 @@ function Get-AlSystemName {
 		} else {
 			continue
 		}
-	}	
+	}
+    
+    HelperCheckForObject AlcatelSwitch "AlcatelParser.Switch"
+    $Global:AlcatelSwitch.SystemName = $ReturnObject
+
 	return $ReturnObject
 }

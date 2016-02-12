@@ -11,6 +11,7 @@ namespace AlcatelParser {
 	
     public class Switch {
 		public string SystemName;
+        public string RouterId;
 		public List<Vlan> Vlans;
         public List<Interface> Interfaces;
     }
